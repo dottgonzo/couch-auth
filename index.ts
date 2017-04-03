@@ -444,12 +444,12 @@ class couchAccess extends couchJsonConf {
     }
 
     login(o: { username: string, password: string, app_id: string }) {
-        const _this = this;
+        const that = this;
 
         return new Promise<boolean>(function (resolve, reject) {
 
             if (o && o.username && o.password && o.app_id) {
-                testauth(_this, o.username, o.password, o.app_id).then(() => {
+                testauth(that, o.username, o.password, o.app_id).then(() => {
                     resolve(true)
                 }).catch((err) => {
                     reject(err)
@@ -474,12 +474,12 @@ class couchAccess extends couchJsonConf {
     }
 
     register(o: { username: string, password: string, email: string, app_id: string }): Promise<boolean> {
-        const _this = this;
+        const that = this;
 
         return new Promise<boolean>(function (resolve, reject) {
             if (o && o.username && o.password && o.email && o.app_id) {
-                _this.createUser(o.username, o.password, o.email).then(() => {
-                    _this.subscribeapp(o.app_id, o.username).then(() => {
+                that.createUser(o.username, o.password, o.email).then(() => {
+                    that.subscribeapp(o.app_id, o.username).then(() => {
                         resolve(true)
                     }).catch((err) => {
                         reject(err)
@@ -541,13 +541,13 @@ class couchAccess extends couchJsonConf {
 
 
     addAppRole(username: string, app_id: string): Promise<boolean> {
-        const _this = this;
+        const that = this;
         return new Promise<boolean>(function (resolve, reject) {
 
-            getuserdb(_this, username).then((u) => {
+            getuserdb(that, username).then((u) => {
                 u.roles.push('app_' + app_id)
 
-                rpj.put(_this.my('_users/org.couchdb.user:' + username), u).then(() => {
+                rpj.put(that.my('_users/org.couchdb.user:' + username), u).then(() => {
 
                     resolve(true)
 
@@ -565,18 +565,18 @@ class couchAccess extends couchJsonConf {
 
 
     createUser(username: string, password: string, email: string): Promise<IUserDB> {
-        const _this = this;
+        const that = this;
         return new Promise<IUserDB>(function (resolve, reject) {
 
-            getuserdb(_this, username).then((u) => {
+            getuserdb(that, username).then((u) => {
                 reject("user " + username + " just eixsts")
 
             }).catch((err) => {
 
                 const doc = { name: username, email: email, db: [], "roles": ['user'], "type": "user", password: password };
 
-                rpj.put(_this.my('_users/org.couchdb.user:' + username), doc).then(() => {
-                    getuserdb(_this, username).then((u) => {
+                rpj.put(that.my('_users/org.couchdb.user:' + username), doc).then(() => {
+                    getuserdb(that, username).then((u) => {
 
                         resolve(u)
 
