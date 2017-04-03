@@ -1,42 +1,14 @@
-import * as Promise from "bluebird";
-import * as _ from "lodash";
+import * as Promise from "bluebird"
+import * as _ from "lodash"
 
-import couchJsonConf from "couchjsonconf";
+import couchJsonConf from "couchjsonconf"
 
-let uid = require("uid");
-let rpj = require("request-promise-json");
+import {IClassConf,IUserDB,IcommonDB} from "./interface"
 
-
-
-
-
-interface IcommonDB {
-    app_id: string;
-    dbname: string;
-    slave?: {
-        username: string;
-        password: string;
-    },
-    dbtype: string
-    roles: string[];
-    label?: string;
-}
+const uid = require("uid")
+const rpj = require("request-promise-json")
 
 
-interface IUserDB {
-    _id: string,
-    _rev: string,
-    password_scheme: string;
-    iterations: string;
-    name: string;
-    email: string;
-    db: IcommonDB[];
-    roles: string[];
-    type: string;
-    derived_key: string;
-    salt: string;
-
-}
 
 
 
@@ -216,7 +188,7 @@ function getmymachines(internal_couchdb, app_id, username) {
 
     return new Promise<IcommonDB[]>(function (resolve, reject) {
         getuserdbs(internal_couchdb, username).then(function (doc) {
-            var dbs = [];
+            var dbs = []
             _.map(doc, function (d) {
                 if (d.app_id == app_id && d.dbtype == 'machine') {
                     dbs.push(d)
@@ -243,7 +215,7 @@ function create_slave_userapp(internal_couchdb, username, userappdb) {
 
 
     return new Promise<{ password: string; user: string }>(function (resolve, reject) {
-        let slave = random_slave(username);
+        let slave = random_slave(username)
         rpj.put(internal_couchdb.my('_users/org.couchdb.user:' + slave.user), {
             name: slave.user,
             roles: ['slave'],
@@ -259,7 +231,7 @@ function create_slave_userapp(internal_couchdb, username, userappdb) {
             }
 
             reject(err)
-        });
+        })
     })
 }
 
@@ -290,14 +262,14 @@ function sharemach(internal_couchdb: couchAccess, app_id, user, label, friend) {
                     resolve(true)
                 }).catch(function (err) {
 
-                    var newdb: IcommonDB = { app_id: app_id, dbname: machinedb, slave: { username: machineuser, password: machinepassw, token: machinetoken }, label: label, dbtype: "machine", roles: ['shared'] };
+                    var newdb: IcommonDB = { app_id: app_id, dbname: machinedb, slave: { username: machineuser, password: machinepassw, token: machinetoken }, label: label, dbtype: "machine", roles: ['shared'] }
                     doc.db.push(newdb)
 
                     rpj.put(internal_couchdb.my('_users/org.couchdb.user:' + friend), doc).then(function () {
 
                         rpj.get(internal_couchdb.my('_users/org.couchdb.user:' + machineuser), doc).then(function (updateslave) {
 
-                            updateslave.app.users.push(newusername);
+                            updateslave.app.users.push(newusername)
 
                             rpj.put(internal_couchdb.my('_users/org.couchdb.user:' + machineuser), updateslave).then(function () {
                                 resolve(true)
@@ -343,17 +315,6 @@ function sharemach(internal_couchdb: couchAccess, app_id, user, label, friend) {
 
 
 
-interface IClassConf {
-    hostname: string;
-    protocol?: string;
-    port?: number;
-    db?: string;
-    user: string;
-    password: string;
-}
-
-
-
 
 
 
@@ -363,7 +324,7 @@ class couchAccess extends couchJsonConf {
     constructor(rootaccessdb: IClassConf) {
         super(rootaccessdb)
 
-        let that = this;
+        let that = this
 
         function addAdminRole() {
             that.addAppRole(that.user, 'main').then(() => {
@@ -444,7 +405,7 @@ class couchAccess extends couchJsonConf {
     }
 
     login(o: { username: string, password: string, app_id: string }) {
-        const that = this;
+        const that = this
 
         return new Promise<boolean>(function (resolve, reject) {
 
@@ -474,7 +435,7 @@ class couchAccess extends couchJsonConf {
     }
 
     register(o: { username: string, password: string, email: string, app_id: string }): Promise<boolean> {
-        const that = this;
+        const that = this
 
         return new Promise<boolean>(function (resolve, reject) {
             if (o && o.username && o.password && o.email && o.app_id) {
@@ -511,7 +472,7 @@ class couchAccess extends couchJsonConf {
 
     createappforuser(app_id, username) { // create a new application
 
-        const internal_couchdb = this;
+        const internal_couchdb = this
 
 
 
@@ -541,7 +502,7 @@ class couchAccess extends couchJsonConf {
 
 
     addAppRole(username: string, app_id: string): Promise<boolean> {
-        const that = this;
+        const that = this
         return new Promise<boolean>(function (resolve, reject) {
 
             getuserdb(that, username).then((u) => {
@@ -565,7 +526,7 @@ class couchAccess extends couchJsonConf {
 
 
     createUser(username: string, password: string, email: string): Promise<IUserDB> {
-        const that = this;
+        const that = this
         return new Promise<IUserDB>(function (resolve, reject) {
 
             getuserdb(that, username).then((u) => {
@@ -573,7 +534,7 @@ class couchAccess extends couchJsonConf {
 
             }).catch((err) => {
 
-                const doc = { name: username, email: email, db: [], "roles": ['user'], "type": "user", password: password };
+                const doc = { name: username, email: email, db: [], "roles": ['user'], "type": "user", password: password }
 
                 rpj.put(that.my('_users/org.couchdb.user:' + username), doc).then(() => {
                     getuserdb(that, username).then((u) => {
@@ -598,14 +559,14 @@ class couchAccess extends couchJsonConf {
     testlogin(user, password, db) {
 
 
-        return testlogin(this, user, password, db);
+        return testlogin(this, user, password, db)
     }
 
 
     testapp_id(app_id) {
 
 
-        return testapp_id(this, app_id);
+        return testapp_id(this, app_id)
     }
 
 
@@ -650,7 +611,7 @@ class couchAccess extends couchJsonConf {
 
 
 
-        const internal_couchdb = this;
+        const internal_couchdb = this
 
 
         return new Promise<boolean>(function (resolve, reject) {
@@ -660,17 +621,17 @@ class couchAccess extends couchJsonConf {
             function sub(doc) {
 
 
-                var newuserdb = gen_db('member', { username: username, app_id: app_id });
+                var newuserdb = gen_db('member', { username: username, app_id: app_id })
 
                 create_slave_userapp(internal_couchdb, username, newuserdb).then(function (slave) {
 
-                    var newdb = { app_id: app_id, dbname: newuserdb, slave: { username: slave.user, password: slave.password }, dbtype: "mine", roles: ['owner'] };
-                    doc.db.push(newdb);
+                    var newdb = { app_id: app_id, dbname: newuserdb, slave: { username: slave.user, password: slave.password }, dbtype: "mine", roles: ['owner'] }
+                    doc.db.push(newdb)
 
                     if (owner) {
-                        doc.roles.push('app_' + app_id);
-                        var startapp = { app_id: app_id, dbname: 'app_' + app_id, dbtype: "application", roles: ['owner'] };
-                        doc.db.push(startapp);
+                        doc.roles.push('app_' + app_id)
+                        var startapp = { app_id: app_id, dbname: 'app_' + app_id, dbtype: "application", roles: ['owner'] }
+                        doc.db.push(startapp)
                     }
 
                     rpj.put(internal_couchdb.my('_users/org.couchdb.user:' + username), doc).then(function () { // push new user settings
@@ -679,10 +640,10 @@ class couchAccess extends couchJsonConf {
                                 resolve(true)
 
                                 // confirmDB.post({confirm:false}).then(function(doc){
-                                //   //  registerMail('darioyzf@gmail.com',doc.id); // TO BE ALIVE
+                                //   //  registerMail('darioyzf@gmail.com',doc.id) // TO BE ALIVE
                                 // }).catch(function(err){
                                 //   reject(err)
-                                // });
+                                // })
 
                             }).catch(function (err) {
                                 if (err.statusCode != 404) {
@@ -739,7 +700,7 @@ class couchAccess extends couchJsonConf {
     }
 
     createapp(app_id) {
-        const internal_couchdb = this;
+        const internal_couchdb = this
 
         // create an application (imperative)
         // return true only
@@ -793,11 +754,9 @@ class couchAccess extends couchJsonConf {
 function gen_db(kind, data): string {
     switch (kind) {
         case 'member':
-            return 'mem_' + uid(3) + '_' + data.app_id + '_' + data.username;
-            break;
+            return 'mem_' + uid(3) + '_' + data.app_id + '_' + data.username
         case 'machine':
-            return 'mach_' + uid(6) + '_' + data.app_id;
-            break;
+            return 'mach_' + uid(6) + '_' + data.app_id
 
     }
 }
