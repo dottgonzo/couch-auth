@@ -76,6 +76,18 @@ before(function (done) {
 
 });
 
+describe("create an user", function () {
+    this.timeout(20000);
+    it("add a common user with no db", function (done) {
+        CouchAuth.createUser('user0', 'password0', 'email0@email.aa').then((d) => {
+            expect(d).to.be.ok;
+            done()
+        }).catch((err) => {
+            console.log(err)
+            done(Error(err));
+        })
+    })
+})
 
 describe("test app_main", function () {
     this.timeout(20000);
@@ -100,7 +112,7 @@ describe("test app_main", function () {
         })
     });
 
-    it("verificate that app_main db is private", function (done) {
+    it("verificate that app_main db is not public", function (done) {
         //    console.log(CouchAuth.my('app_main'))
         rpj.put(CouchAuth.publink + '/app_main/testdocnotbepresent0', { _id: 'testdocnotbepresent0', ee: true }).then(function (d) {
             done(Error(d));
@@ -111,6 +123,15 @@ describe("test app_main", function () {
 
     });
 
+    it("verificate that app_main db is not open to other users", function (done) {
+        rpj.put(CouchAuth.for('user0', 'password0') + '/app_main/testdocnotbepresent0', { _id: 'testdocnotbepresent0', ee: true }).then(function (d) {
+            done(Error(d));
+        }).catch((err) => {
+            expect(err).to.be.ok;
+            done();
+        })
+
+    });
 
     it("verificate admin user", function (done) {
         //    console.log(CouchAuth.my('app_main'))
@@ -129,9 +150,11 @@ describe("test app_main", function () {
 
 
 });
-describe("create a new app", function () {
+describe("create a new closed app", function () {
     it("main admin add first app", function (done) {
-        CouchAuth.createapp('testapp').then(function (d) {
+        this.timeout(20000);
+
+        CouchAuth.createClosedApp('testapp').then(function (d) {
             expect(d).to.be.ok;
 
             done()
@@ -139,131 +162,172 @@ describe("create a new app", function () {
             done(Error(err));
         })
     })
+
+    it("unregistered users can't access", function (done) {
+        this.timeout(20000);
+
+        rpj.get(CouchAuth.publink + '/testapp/testdoctobepresent0').then(function (d) {
+            done(Error(d));
+        }).catch((err) => {
+            expect(err).to.be.ok;
+            done();
+        })
+    })
+
+    it("other users can't access", function (done) {
+        this.timeout(20000);
+
+        rpj.get(CouchAuth.for('user0', 'password0') + '/testapp/testdoctobepresent0').then(function (d) {
+            done(Error(d));
+        }).catch((err) => {
+            expect(err).to.be.ok;
+            done();
+        })
+    })
+
+
 })
-describe("users", function () {
-    describe("registration", function () {
-        let slave;
 
-        it("create an user", function (done) {
-            CouchAuth.register({ username: user0.user, password: user0.password, email: user0.email, app_id: 'testapp' }).then(function () {
+describe("create a new ro app", function () {
+    it("main admin add ro app", function (done) {
+        this.timeout(20000);
 
-
-                rpj.get(CouchAuth.my('_users/org.couchdb.user:' + user0.user)).then(function (d) {
-
-                    expect(d).to.be.ok;
-                    expect(d).to.have.property('name').that.eq(user0.user);
-                    expect(d).to.have.property('email').that.eq(user0.email);
-
-                    expect(d).to.have.property('roles').that.is.an('array');
-                    expect(d.roles[0]).to.be.eq('user');
-
-                    expect(d).to.have.property('type').that.eq('user');
-
-                    expect(d).to.have.property('db').that.is.an('array');
-
-                    expect(d.db[0]).to.have.property('app_id').that.is.a('string').that.eq('testapp');
-                    expect(d.db[0]).to.have.property('dbname').that.is.a('string');
-                    expect(d.db[0]).to.have.property('dbtype').that.is.a('string').that.eq('mine');
-
-                    expect(d.db[0]).to.have.property('roles').that.is.an('array');
-                    expect(d.db[0].roles[0]).to.be.eq('owner');
-
-                    expect(d.db[0]).to.have.property('slave').that.is.an('object');
-                    expect(d.db[0].slave).to.have.property('username').that.is.a('string');
-                    expect(d.db[0].slave).to.have.property('password').that.is.a('string');
-
-                    slave = d.db[0].slave;
-                    done();
-
-
-
-                }).catch((err) => {
-                    done(Error(err));
-                })
-            }).catch((err) => {
-                done(Error(err));
-            })
-
-
-
-        })
-
-        it("check slave", function (done) {
-
-            rpj.get(CouchAuth.my('_users/org.couchdb.user:' + slave.username)).then((d) => {
-
+        CouchAuth.createRoApp('testapp2').then(function (d) {
+            rpj.put(CouchAuth.my('testapp2') + '/testdoctobepresent0', { _id: 'testdoctobepresent0', ee: true }).then(function (d) {
                 expect(d).to.be.ok;
-
-                expect(d).to.have.property('name').that.eq(slave.username);
-
-                expect(d).to.have.property('roles').that.is.an('array');
-                expect(d.roles[0]).to.be.eq('slave');
-
-
-                expect(d).to.have.property('app').that.is.an('object');
-                expect(d.app).to.have.property('db').that.is.a('string');
-                expect(d.app).to.have.property('user').that.is.a('string');
-
-                expect(d).to.have.property('dbtype').that.is.a('string').that.eq('userslave');
-
-                expect(d).to.have.property('type').that.is.a('string').that.eq('user');
-
+                expect(d).to.be.an('object');
                 done();
             }).catch((err) => {
+                console.log(err)
                 done(Error(err));
             })
 
 
-
+        }).catch((err) => {
+            done(Error(err));
         })
+    })
 
-        it("can login", function (done) {
+    it("unregistered users can access", function (done) {
+        this.timeout(20000);
+
+        rpj.get(CouchAuth.publink + '/testapp2/testdoctobepresent0').then(function (d) {
+            expect(d).to.be.ok;
+            done();
+
+        }).catch((err) => {
+            console.log(err)
+            done(Error(err));
+        })
+    })
+    it("registered users can access", function (done) {
+        this.timeout(20000);
+
+        rpj.get(CouchAuth.for('user0', 'password0') + '/testapp2/testdoctobepresent0').then(function (d) {
+            expect(d).to.be.ok;
+            done();
+
+        }).catch((err) => {
+            console.log(err)
+            done(Error(err));
+        })
+    })
+    it("unregistered users can't add docs", function (done) {
+        this.timeout(20000);
+
+        rpj.put(CouchAuth.publink + '/testapp2/cccn', { _id: 'cccn', aa: true }).then(function (d) {
+            console.log(d)
+            done(Error(d));
+        }).catch((err) => {
+            expect(err).to.be.ok;
+            done();
+        })
+    })
+
+    it("registered users can't add docs", function (done) {
+        this.timeout(20000);
+
+        rpj.put(CouchAuth.for('user0', 'password0') + '/testapp2/cccb', { _id: 'cccb', aa: true }).then(function (d) {
+            done(Error(d));
+        }).catch((err) => {
+            expect(err).to.be.ok;
+            done();
+        })
+    })
 
 
-            CouchAuth.login({ username: user0.user, password: user0.password, app_id: 'testapp' }).then(() => {
+})
 
-                done();
+
+describe("users", function () {
+
+
+    it("unregistered users can't add dbs", function (done) {
+        this.timeout(20000);
+
+        rpj.put(CouchAuth.publink + '/testapp3')
+
+        setTimeout(() => {
+            rpj.get(CouchAuth.my('testapp3')).then(function (d) {
+                console.log('ee')
+                done(new Error(d));
             }).catch((err) => {
-                done(Error(err));
+                expect(err).to.be.ok;
+                done();
             })
+        }, 5000)
 
+    })
 
+    it("registered users can't add dbs", function (done) {
+        this.timeout(20000);
 
-        })
+        rpj.put(CouchAuth.for('user0', 'password0') + '/testapp3')
+
+        setTimeout(() => {
+            rpj.get(CouchAuth.my('testapp3')).then(function (d) {
+                console.log('ee')
+                done(new Error(d));
+            }).catch((err) => {
+                expect(err).to.be.ok;
+                done();
+            })
+        }, 5000)
 
     })
 
 
-    describe("machine", function () {
+    it("a registered users can subscribe a db and access to it (rw)", function (done) {
+        this.timeout(20000);
 
+                done(new Error('todo'));
 
-        it("create a machine for an app subscribed", function (done) {
-            done();
-        })
-        it("can't create a machine for an app that not subscribed yet", function (done) {
-            done();
-        })
-        it("share a machine that own", function (done) {
-            done();
-        })
-        it("can't share a machine that not own", function (done) {
-            done();
-        })
-        it("change a user role for a machine that own", function (done) {
-            done();
-        })
-        it("can't change  a user role for a machine that not own", function (done) {
-            done();
-        })
-        it("delete a machine that own", function (done) {
-            done();
-        })
-        it("can't delete a machine that not own", function (done) {
-            done();
-        })
 
     })
 
+    it("other registered users can't access to the previous database subscribed by other users", function (done) {
+        this.timeout(20000);
+
+                done(new Error('todo'));
+
+
+    })
+
+    it("an unregistered users can't subscribe a db", function (done) {
+        this.timeout(20000);
+
+                done(new Error('todo'));
+
+
+    })
+
+    it("an unregistered users can't access to the previous database subscribed by other users", function (done) {
+        this.timeout(20000);
+
+                done(new Error('todo'));
+
+
+    })
 
 })
 
