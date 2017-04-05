@@ -1,0 +1,9 @@
+app_main closed
+private_  closed
+pub_   ro
+service_  closed
+
+
+crea un database di servizio (ed un utente destinato ad utilizzarlo)
+
+

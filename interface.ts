@@ -1,9 +1,8 @@
 
 
 
-export  interface IcommonDB {
+export interface IcommonDB {
     app_id: string;
-    dbname: string;
     slave?: {
         username: string;
         password: string;
@@ -14,7 +13,7 @@ export  interface IcommonDB {
 }
 
 
-export  interface IUserDB {
+export interface IUserDB {
     _id: string,
     _rev: string,
     password_scheme: string;
@@ -29,9 +28,14 @@ export  interface IUserDB {
 
 }
 
+export interface ISecurity {
+    members: {
+        names: string[]
+        roles: string[]
+    }
+}
 
-
-export  interface IClassConf {
+export interface IClassConf {
     hostname: string;
     protocol?: string;
     port?: number;
@@ -41,3 +45,21 @@ export  interface IClassConf {
 }
 
 
+export interface IAuth {
+    user: string
+    password: string
+}
+
+export interface IAuthDB extends IAuth {
+    db: string
+}
+export interface IUserDoc {
+    _id:string
+    users:IUser[]
+    _rev?:string
+}
+export interface IUser {
+    role:string
+    name:string
+    createdAt:number
+}
