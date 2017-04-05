@@ -1,5 +1,6 @@
 import * as Promise from "bluebird"
 import * as _ from "lodash"
+import * as async from "async"
 
 import couchJsonConf from "couchjsonconf"
 
@@ -349,8 +350,8 @@ class couchAccess extends couchJsonConf {
         return new Promise<I.IService[]>(function (resolve, reject) {
             if (admin && that.checkAdmin(admin)) {
 
-                    rpj.get(that.my('app_main/services')).then((doc:I.IServicesDoc) => {
-                        resolve(doc.services)
+                rpj.get(that.my('app_main/services')).then((doc: I.IServicesDoc) => {
+                    resolve(doc.services)
                 }).catch(function (err) {
                     reject(err)
                 })
@@ -360,7 +361,29 @@ class couchAccess extends couchJsonConf {
             }
         })
     }
+    Setup(admin, services: I.IServiceSetup[]): Promise<boolean> {
+        const that = this
 
+        return new Promise<boolean>(function (resolve, reject) {
+            if (admin && that.checkAdmin(admin)) {
+
+                async.eachSeries(services, (service, cb) => {
+                    console.log('todo')
+                    console.log(service)
+                    cb()
+                }, (err) => {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        resolve(true)
+                    }
+                })
+
+            } else {
+                reject({ error: 'unauthorized' })
+            }
+        })
+    }
     createPubApp(admin: I.IAuth, app_id) {
         const that = this
 

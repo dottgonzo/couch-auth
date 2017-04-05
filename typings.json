@@ -1,5 +1,6 @@
 {
   "globalDependencies": {
+    "async": "registry:dt/async#2.0.1+20170322225536",
     "bluebird": "registry:dt/bluebird#3.0.0+20160811111256",
     "lodash": "registry:dt/lodash#4.14.0+20160817155621"
   },

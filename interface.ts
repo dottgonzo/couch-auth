@@ -93,3 +93,14 @@ export interface IService {
     db:string
     createdAt:number
 }
+
+export interface IServiceSetup extends IService{
+    devices:IDevice[]
+    users:IUserSetup[]
+    name:string
+}
+
+export interface IUserSetup extends IUser{
+password:string
+}
+
