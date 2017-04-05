@@ -42,12 +42,10 @@ class couchAccess extends couchJsonConf {
 
         const that = this
 
+
+
         function addAdminRole() {
-            that.addAppRole({ user: that.user, password: that.password }, that.user, 'app_main').then(() => {
-                return true
-            }).catch((err) => {
-                throw new Error(err)
-            })
+            that.addAppRole({ user: that.user, password: that.password }, that.user, 'app_main')
         }
 
         rpj.get(that.my('app_main')).then(function () {
@@ -58,7 +56,9 @@ class couchAccess extends couchJsonConf {
                 if (u.roles.indexOf('app_main') !== -1) {
                     addAdminRole()
                 } else {
+
                     return true
+
                 }
 
             }).catch((err) => {
@@ -73,27 +73,33 @@ class couchAccess extends couchJsonConf {
 
         }).catch(function (err) {
 
-
             that.createClosedApp({ user: that.user, password: that.password }, 'app_main').then(() => {
 
-                getuserdb(that, { user: that.user, password: that.password }, that.user).then((u) => {
+                const services: I.IServicesDoc = {
+                    _id: 'services',
+                    services: []
+                }
+                rpj.put(that.my('app_main') + '/services', services).then(() => {
+                    getuserdb(that, { user: that.user, password: that.password }, that.user).then((u) => {
 
-                    if (u.roles.indexOf('app_main') !== -1) {
-                        addAdminRole()
-                    } else {
-                        return true
-                    }
+                        if (u.roles.indexOf('app_main') !== -1) {
+                            addAdminRole()
+                        } else {
+                            return true
+                        }
 
-                }).catch((err) => {
-
-                    that.createUser({ user: that.user, password: that.password }, { user: that.user, password: that.password }).then(() => {
-                        addAdminRole()
                     }).catch((err) => {
-                        throw new Error(err)
+
+                        that.createUser({ user: that.user, password: that.password }, { user: that.user, password: that.password }).then(() => {
+                            addAdminRole()
+                        }).catch((err) => {
+                            throw new Error(err)
+                        })
+
                     })
-
+                }).catch((err) => {
+                    throw new Error(err)
                 })
-
             }).catch((err) => {
                 throw new Error(err)
             })
@@ -161,7 +167,7 @@ class couchAccess extends couchJsonConf {
                         resolve(true)
 
                     } else {
-                        rpj.get(that.my(app_id + '/users')).then((doc: I.IUserDoc) => {
+                        rpj.get(that.my(app_id + '/users')).then((doc: I.IUsersDoc) => {
                             doc.users.push({ name: username, role: 'user', createdAt: Date.now() })
                             rpj.put(that.my(app_id + '/users'), doc).then((doc) => {
                                 resolve(true)
@@ -175,9 +181,10 @@ class couchAccess extends couchJsonConf {
                             if (err.statusCode !== 404) {
                                 reject(err)
                             } else {
-                                const doc: I.IUserDoc = {
-                                    _id: '/users',
-                                    users: [{ name: username, role: 'user', createdAt: Date.now() }]
+                                const doc: I.IUsersDoc = {
+                                    _id: 'users',
+                                    users: [{ name: username, role: 'user', createdAt: Date.now() }],
+                                    createdAt: Date.now()
                                 }
                                 rpj.put(that.my(app_id + '/users'), doc).then((doc) => {
                                     resolve(true)
@@ -293,7 +300,31 @@ class couchAccess extends couchJsonConf {
                     }).then(function () {
                         that.createUser(admin, slaveuser).then(function () {
                             that.addAppRole(admin, slaveuser.user, app_id).then(function () {
-                                resolve(true)
+                                const devicesdoc: I.IDevicesDoc = {
+                                    _id: 'devices',
+                                    devices: [],
+                                    createdAt: Date.now()
+                                }
+                                rpj.put(that.my(app_id + '/users'), devicesdoc).then(() => {
+                                    rpj.get(that.my('app_main') + '/services').then((servicesdoc: I.IServicesDoc) => {
+
+                                        servicesdoc.services.push({
+                                            db: app_id,
+                                            createdAt: Date.now()
+                                        })
+
+                                        rpj.put(that.my('app_main') + '/services', servicesdoc).then(() => {
+                                            resolve(true)
+                                        }).catch((err) => {
+                                            reject(err)
+                                        })
+                                    }).catch((err) => {
+                                        reject(err)
+                                    })
+
+                                }).catch((err) => {
+                                    reject(err)
+                                })
                             }).catch(function (err) {
                                 reject(err)
                             })
@@ -308,6 +339,24 @@ class couchAccess extends couchJsonConf {
                 })
             } else {
                 reject({ error: 'wrong params for service app creation' })
+            }
+        })
+    }
+
+    getServices(admin: I.IAuth) {
+        const that = this
+
+        return new Promise<I.IService[]>(function (resolve, reject) {
+            if (admin && that.checkAdmin(admin)) {
+
+                    rpj.get(that.my('app_main/services')).then((doc:I.IServicesDoc) => {
+                        resolve(doc.services)
+                }).catch(function (err) {
+                    reject(err)
+                })
+
+            } else {
+                reject({ error: 'unauthorized' })
             }
         })
     }

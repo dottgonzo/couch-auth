@@ -53,13 +53,43 @@ export interface IAuth {
 export interface IAuthDB extends IAuth {
     db: string
 }
-export interface IUserDoc {
-    _id:string
-    users:IUser[]
-    _rev?:string
+export interface IUsersDoc {
+    _id: 'users'
+    users: IUser[]
+    _rev?: string
+    createdAt:number
 }
+type IUserRole = 'user' 
+
 export interface IUser {
-    role:string
-    name:string
+    role: IUserRole
+    name: string
+    createdAt: number
+}
+
+export interface IDevice {
+    role: IDeviceRole
+    serial: string
+    createdAt: number
+}
+
+type IDeviceRole = 'device' 
+
+export interface IDevicesDoc {
+    _id: 'devices'
+    devices: IDevice[]
+    createdAt: number
+    _rev?: string
+}
+
+
+export interface IServicesDoc {
+    _id: 'services'
+    services: IService[]
+    _rev?: string
+}
+
+export interface IService {
+    db:string
     createdAt:number
 }

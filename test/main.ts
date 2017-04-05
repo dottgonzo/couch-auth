@@ -69,7 +69,7 @@ before(function (done) {
 
                 setTimeout(function () {
                     done()
-                }, 1000)
+                }, 2000)
             }
         })
 
@@ -95,7 +95,7 @@ describe("test app_main", function () {
                 expect(d).to.be.an('object')
                 done()
             }).catch((err) => {
-                console.log(err)
+                console.error(err)
                 done(Error(err))
             })
 
@@ -104,7 +104,20 @@ describe("test app_main", function () {
             done(Error(err))
         })
     })
+    it("verificate presence of service doc", function (done) {
 
+
+        rpj.get(CouchAuth.my('app_main') + '/services').then(function (d) {
+
+            expect(d).to.be.ok
+            expect(d).to.be.an('object')
+            done()
+
+
+        }).catch((err) => {
+            done(Error(err))
+        })
+    })
     it("verificate that app_main db is not public", function (done) {
         //    console.log(CouchAuth.my('app_main'))
         rpj.put(CouchAuth.publink + '/app_main/testdocnotbepresent0', { _id: 'testdocnotbepresent0', ee: true }).then(function (d) {
@@ -142,11 +155,11 @@ describe("user managment", function () {
                 expect(d).to.be.ok
                 done()
             }).catch((err) => {
-                console.log(err)
+                console.error(err)
                 done(Error(err))
             })
         }).catch((err) => {
-            console.log(err)
+                console.error(err)
             done(Error(err))
         })
     })
@@ -169,17 +182,30 @@ describe("create a new service app", function () {
 
         CouchAuth.createServiceApp(adminUser, 'testapp', slaveuser).then(function () {
 
-        rpj.get(CouchAuth.my('service_testapp') + '/_security', { _id: 'testnewdoc0', ee: true }).then(function (d) {
-            console.log(d)
-            expect(d).to.be.ok
-            expect(d).to.be.an('object')
-            done()
-        }).catch((err) => {
-            console.log(err)
-            done(Error(err))
+            rpj.get(CouchAuth.my('service_testapp') + '/_security', { _id: 'testnewdoc0', ee: true }).then(function (d) {
+                expect(d).to.be.ok
+                expect(d).to.be.an('object')
+                done()
+            }).catch((err) => {
+                console.error(err)
+                done(Error(err))
 
+            })
+
+        }).catch((err) => {
+            done(Error(err))
         })
 
+    })
+    it("check the service list", function (done) {
+        this.timeout(20000)
+
+        CouchAuth.getServices(adminUser).then(function (d) {
+            expect(d).to.be.ok
+            expect(d).to.be.an('Array')
+            expect(d.length).to.be.eq(1)
+
+            done()
         }).catch((err) => {
             done(Error(err))
         })
@@ -189,12 +215,11 @@ describe("create a new service app", function () {
         this.timeout(20000)
 
         rpj.put(CouchAuth.for(slaveuser.user, slaveuser.password) + '/service_testapp/testnewdoc0', { _id: 'testnewdoc0', ee: true }).then(function (d) {
-            console.log(d)
             expect(d).to.be.ok
             expect(d).to.be.an('object')
             done()
         }).catch((err) => {
-            console.log(err)
+            console.error(err)
             done(Error(err))
 
         })
@@ -216,7 +241,7 @@ describe("create a new service app", function () {
         this.timeout(20000)
 
         rpj.get(CouchAuth.for(user0.user, user0.password) + '/service_testapp/testdoctobepresent0').then(function (d) {
-            done(Error(d))
+                done(new Error(d))
         }).catch((err) => {
             expect(err).to.be.ok
             done()
@@ -236,13 +261,13 @@ describe("create a new public app (an app read only)", function () {
                 expect(d).to.be.an('object')
                 done()
             }).catch((err) => {
-                console.log(err)
-                done(Error(err))
+                console.error(err)
+                done(new Error(err))
             })
 
 
         }).catch((err) => {
-            done(Error(err))
+                done(new Error(err))
         })
     })
 
@@ -254,8 +279,8 @@ describe("create a new public app (an app read only)", function () {
             done()
 
         }).catch((err) => {
-            console.log(err)
-            done(Error(err))
+            console.error(err)
+                done(new Error(err))
         })
     })
     it("registered users can read from a public app", function (done) {
@@ -266,16 +291,16 @@ describe("create a new public app (an app read only)", function () {
             done()
 
         }).catch((err) => {
-            console.log(err)
-            done(Error(err))
+            console.error(err)
+                done(new Error(err))
         })
     })
     it("unregistered users can't add docs to a public app", function (done) {
         this.timeout(20000)
 
         rpj.put(CouchAuth.publink + '/pub_testapp2/cccn', { _id: 'cccn', aa: true }).then(function (d) {
-            console.log(d)
-            done(Error(d))
+            console.error(d)
+                done(new Error(d))
         }).catch((err) => {
             expect(err).to.be.ok
             done()
@@ -286,7 +311,7 @@ describe("create a new public app (an app read only)", function () {
         this.timeout(20000)
 
         rpj.put(CouchAuth.for(user0.user, user0.password) + '/pub_testapp2/cccb', { _id: 'cccb', aa: true }).then(function (d) {
-            done(Error(d))
+                done(new Error(d))
         }).catch((err) => {
             expect(err).to.be.ok
             done()
@@ -333,89 +358,6 @@ describe("users", function () {
     })
 })
 
-describe("db access for users", function () {
-
-    it("an admin can create a closed db and delegate an user to rw it", function (done) {
-        this.timeout(20000)
-
-        done(new Error('todo'))
-
-
-    })
-
-    it("a delegated rw user for a db can access and write on it", function (done) {
-        this.timeout(20000)
-
-        done(new Error('todo'))
-
-
-    })
-
-    it("a common user can't read or write it", function (done) {
-        this.timeout(20000)
-
-        done(new Error('todo'))
-
-
-    })
-
-
-    it("a registered users can subscribe a db and access to it (ro), it need admin crdentials", function (done) {
-        this.timeout(20000)
-
-        done(new Error('todo'))
-
-
-    })
-    it("a registered users have a list of accessible dbs (ro or rw)", function (done) {
-        this.timeout(20000)
-
-        done(new Error('todo'))
-
-
-    })
-    it("can access read all subscribed apps", function (done) {
-        this.timeout(20000)
-
-        done(new Error('todo'))
-
-
-    })
-
-    it("can't write on ro subscribed apps", function (done) {
-        this.timeout(20000)
-
-        done(new Error('todo'))
-
-
-    })
-    it("can unsubscribed apps", function (done) {
-        this.timeout(20000)
-
-        done(new Error('todo'))
-
-
-    })
-
-    it("can't read on unsubscribed apps", function (done) {
-        this.timeout(20000)
-
-        done(new Error('todo'))
-
-
-    })
-
-    it("an unregistered users can't subscribe a db", function (done) {
-        this.timeout(20000)
-
-        done(new Error('todo'))
-
-
-    })
-
-
-
-})
 
 
 
