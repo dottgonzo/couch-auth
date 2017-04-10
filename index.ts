@@ -423,9 +423,6 @@ export class couchAccess extends couchJsonConf {
     }
 
 
-
-
-
 }
 
 
@@ -440,22 +437,72 @@ export function accessRouter(rootaccessdb: I.IClassConf) {
 
     router.get('/', (req, res) => {
         res.send('need access');
-
     })
 
     router.post('/testadmin', (req, res) => {
 
-        const admin = req.body.admin
-
-        console.log(admin)
-
-        if (admin && CouchAuth.checkAdmin(admin)) {
-
+        if (req.body && req.body.admin && CouchAuth.checkAdmin(req.body.admin)) {
             res.send({ ok: true });
-
         } else {
             res.send({ error: 'wrong admin credentials' });
+        }
 
+    })
+
+
+    router.post('/users/create', (req, res) => {
+
+        if (req.body && req.body.admin && CouchAuth.checkAdmin(req.body.admin)) {
+            if (req.body.user && req.body.newuser.user && req.body.newuser.password) {
+                CouchAuth.createUser(req.body.admin, req.body.newuser).then(() => {
+                    res.send({ ok: true });
+                }).catch((err) => {
+                    res.send({ error: err });
+                })
+            } else {
+                res.send({ error: 'wrong user credentials' });
+            }
+        } else {
+            res.send({ error: 'wrong admin credentials' });
+        }
+
+    })
+
+
+    router.post('/users/:user/login', (req, res) => {
+
+        if (req.body && req.body.password) {
+            CouchAuth.login({ user: req.params.user, password: req.body.password }).then(() => {
+                res.send({ ok: true });
+            }).catch((err) => {
+                res.send({ error: err });
+            })
+        } else {
+            res.send({ error: 'wrong admin credentials' });
+        }
+
+
+    })
+
+
+
+    router.post('/services/create', (req, res) => {
+        if (req.body && req.body.admin && CouchAuth.checkAdmin(req.body.admin)) {
+            if (req.body.user && req.body.newuser.user && req.body.newuser.password) {
+                if (req.body.app_id) {
+                    CouchAuth.createServiceApp(req.body.admin, req.body.app_id, req.body.newuser).then(() => {
+                        res.send({ ok: true });
+                    }).catch((err) => {
+                        res.send({ error: err });
+                    })
+                } else {
+                    res.send({ error: 'wrong app_id' });
+                }
+            } else {
+                res.send({ error: 'wrong user credentials' });
+            }
+        } else {
+            res.send({ error: 'wrong admin credentials' });
         }
 
     })
