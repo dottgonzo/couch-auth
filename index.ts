@@ -4,10 +4,14 @@ import * as async from "async"
 
 import couchJsonConf from "couchjsonconf"
 
+import * as express from "express"
+
+
 import * as I from "./interface"
 
 const uid = require("uid")
 const rpj = require("request-promise-json")
+
 
 
 
@@ -36,7 +40,7 @@ function getuserdb(internal_couchdb, adminAuth: I.IAuth, username: string): Prom
 
 
 
-class couchAccess extends couchJsonConf {
+export class couchAccess extends couchJsonConf {
 
     constructor(rootaccessdb: I.IClassConf) {
         super(rootaccessdb)
@@ -425,6 +429,39 @@ class couchAccess extends couchJsonConf {
 }
 
 
+const router = express.Router()
+
+export function accessRouter(rootaccessdb: I.IClassConf) {
+
+    const CouchAuth = new couchAccess(rootaccessdb)
 
 
-export default couchAccess
+
+
+    router.get('/', (req, res) => {
+        res.send('need access');
+
+    })
+
+    router.post('/testadmin', (req, res) => {
+
+        const admin = req.body.admin
+
+        console.log(admin)
+
+        if (admin && CouchAuth.checkAdmin(admin)) {
+
+            res.send({ ok: true });
+
+        } else {
+            res.send({ error: 'wrong admin credentials' });
+
+        }
+
+    })
+
+
+    return router
+
+}
+

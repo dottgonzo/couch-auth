@@ -1,7 +1,7 @@
 import * as mocha from "mocha"
 import * as chai from "chai"
 
-import couchauth from "../index"
+import {couchAccess} from "../index"
 
 const rpj = require('request-promise-json')
 const spawnPouchdbServer = require('spawn-pouchdb-server')
@@ -32,7 +32,7 @@ let Server
 let aa = 'ss'
 
 
-let CouchAuth: couchauth
+let CouchAuth: couchAccess
 
 
 
@@ -58,7 +58,7 @@ before(function (done) {
                 Server = server
 
 
-                CouchAuth = new couchauth({
+                CouchAuth = new couchAccess({
                     hostname: 'localhost',
                     protocol: 'http',
                     port: testport,
@@ -357,7 +357,6 @@ describe("users", function () {
 
     })
 })
-
 
 
 
