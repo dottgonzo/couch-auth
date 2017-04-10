@@ -310,7 +310,7 @@ export class couchAccess extends couchJsonConf {
                                     devices: [],
                                     createdAt: Date.now()
                                 }
-                                rpj.put(that.my(app_id + '/users'), devicesdoc).then(() => {
+                                rpj.put(that.my(app_id + '/devices'), devicesdoc).then(() => {
                                     rpj.get(that.my('app_main') + '/services').then((servicesdoc: I.IServicesDoc) => {
 
                                         servicesdoc.services.push({
