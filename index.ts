@@ -440,7 +440,6 @@ export function accessRouter(rootaccessdb: I.IClassConf) {
     })
 
     router.post('/testadmin', (req, res) => {
-
         if (req.body && req.body.admin && CouchAuth.checkAdmin(req.body.admin)) {
             res.send({ ok: true });
         } else {
@@ -453,7 +452,7 @@ export function accessRouter(rootaccessdb: I.IClassConf) {
     router.post('/users/create', (req, res) => {
 
         if (req.body && req.body.admin && CouchAuth.checkAdmin(req.body.admin)) {
-            if (req.body.user && req.body.newuser.user && req.body.newuser.password) {
+            if (req.body.newuser && req.body.newuser.user && req.body.newuser.password) {
                 CouchAuth.createUser(req.body.admin, req.body.newuser).then(() => {
                     res.send({ ok: true });
                 }).catch((err) => {
@@ -488,7 +487,7 @@ export function accessRouter(rootaccessdb: I.IClassConf) {
 
     router.post('/services/create', (req, res) => {
         if (req.body && req.body.admin && CouchAuth.checkAdmin(req.body.admin)) {
-            if (req.body.user && req.body.newuser.user && req.body.newuser.password) {
+            if (req.body.newuser && req.body.newuser.user && req.body.newuser.password) {
                 if (req.body.app_id) {
                     CouchAuth.createServiceApp(req.body.admin, req.body.app_id, req.body.newuser).then(() => {
                         res.send({ ok: true });

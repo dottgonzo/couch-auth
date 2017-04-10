@@ -8,12 +8,12 @@ import couchJsonConf from "couchjsonconf"
 let couchServer
 
 
-function promptfor_newuser() {
+function promptfor_newuser(server) {
 
 
   inquirer.prompt([{
     type: 'input',
-    name: 'username',
+    name: 'user',
     message: 'Insert username'
   },
   {
@@ -26,11 +26,82 @@ function promptfor_newuser() {
     inquirer.prompt([{
       type: 'confirm',
       name: 'confirm',
-      message: 'Do you want to add the user ' + user.username + ' with password ' + user.password
+      message: 'Do you want to add the user ' + user.user + ' with password ' + user.password
     }]).then(function (answer) {
 
       if (answer.confirm) {
-        console.log('create user ' + user.username + ' with password ' + user.password)
+
+        rpj.post(server.uri + '/access/testadmin', { admin: server.admin }).then((a) => {
+
+
+          console.log('create user ' + user.user + ' with password ' + user.password)
+
+
+        }).catch((err) => {
+
+          console.error('error', err)
+
+        })
+
+
+      } else {
+        console.log('exit')
+      }
+
+    })
+
+
+  })
+
+
+
+}
+
+
+
+function promptfor_newservice(server) {
+
+
+  inquirer.prompt([{
+    type: 'input',
+    name: 'app_id',
+    message: 'Insert app_id'
+  },
+  {
+    type: 'input',
+    name: 'user',
+    message: 'Insert username'
+  },
+  {
+    type: 'password',
+    message: 'Enter the new user password',
+    name: 'password'
+  }]).then(function (user) {
+
+
+    inquirer.prompt([{
+      type: 'confirm',
+      name: 'confirm',
+      message: 'Do you want to add the user ' + user.user + ' with password ' + user.password
+    }]).then(function (answer) {
+
+      if (answer.confirm) {
+
+        console.log(server.uri + '/access/services/create', { admin: server.admin, newuser: user, app_id: user.app_id })
+
+        rpj.post(server.uri + '/access/services/create', { admin: server.admin, newuser: user, app_id: user.app_id }).then((a) => {
+
+
+          console.log('created', a)
+
+
+        }).catch((err) => {
+
+          console.error('error', err)
+
+        })
+
+
       } else {
         console.log('exit')
       }
@@ -48,45 +119,67 @@ function promptfor_newuser() {
 
 function testserverandrun(server) {
 
-  couchServer = new couchJsonConf({
-    hostname: server.host,
-    user: server.username,
-    password: server.password
-  })
+  let appli
 
-  rpj.get(couchServer.my('app_main')).then((a) => {
+  if (server.port === 443) {
+    appli = 'https://' + server.host
+  } else if (server.port === 80) {
+    appli = 'http://' + server.host
+  } else {
+    appli = 'http://' + server.host + ':' + server.port
+  }
+
+  server.uri = appli
+  server.admin = { user: server.user, password: server.password }
+
+  console.log(server.uri + '/access/testadmin', server.admin)
+  rpj.post(server.uri + '/access/testadmin', { admin: server.admin }).then((a) => {
 
 
-    inquirer.prompt([
-      {
-        type: 'list',
-        name: 'todo',
-        message: 'What do you want to do?',
-        choices: [
-          'add new service',
-          'add new user'
-        ],
-        filter: function (val) {
-          return val.replace(/ /g, '').toLowerCase();
-        }
-      }]).then(function (answer) {
+    if (a && a.ok) {
 
-        switch (answer.todo) {
 
-          case 'addnewuser':
+      inquirer.prompt([
+        {
+          type: 'list',
+          name: 'todo',
+          message: 'What do you want to do?',
+          choices: [
+            'add new service',
+            'add new user'
+          ],
+          filter: function (val) {
+            return val.replace(/ /g, '').toLowerCase();
+          }
+        }]).then(function (answer) {
 
-            promptfor_newuser()
+          switch (answer.todo) {
 
-            break
+            case 'addnewuser':
 
-        }
+              promptfor_newuser(server)
 
-      })
+              break
+            case 'addnewservice':
 
+              promptfor_newservice(server)
+
+              break
+          }
+
+        })
+
+    } else if (a && a.error) {
+      console.error(a.error)
+
+    } else {
+      console.error('invalid host credentials', a)
+
+    }
 
   }).catch((err) => {
 
-    console.error('invalid host credentials')
+    console.error('invalid host credentials', err)
     start()
 
   })
@@ -106,7 +199,7 @@ function start() {
     },
     {
       type: 'input',
-      name: 'username',
+      name: 'user',
       message: 'Insert username'
     },
     {
@@ -117,7 +210,7 @@ function start() {
     {
       type: 'list',
       name: 'port',
-      message: 'What do you want to do?',
+      message: 'Which port?',
       choices: [
         '80',
         '5984',
@@ -131,12 +224,14 @@ function start() {
     }]).then(function (server) {
 
 
-      if (server && server.host && server.password && server.username) {
+      if (server && server.host && server.password && server.user) {
 
 
 
 
         if (server.port) {
+
+
           testserverandrun(server)
         } else {
 
