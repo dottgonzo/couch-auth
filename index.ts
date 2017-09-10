@@ -70,6 +70,7 @@ export class couchAccess extends couchJsonConf {
                 that.createUser({ user: that.user, password: that.password }, { user: that.user, password: that.password }).then(() => {
                     addAdminRole()
                 }).catch((err) => {
+                    console.error('graverror 325')
                     throw new Error(err)
                 })
 
@@ -98,14 +99,18 @@ export class couchAccess extends couchJsonConf {
                         that.createUser({ user: that.user, password: that.password }, { user: that.user, password: that.password }).then(() => {
                             addAdminRole()
                         }).catch((err) => {
+                            console.error('terrible error 54745')
                             throw new Error(err)
                         })
 
                     })
                 }).catch((err) => {
+                    console.error('terrible error 4545')
                     throw new Error(err)
                 })
             }).catch((err) => {
+                console.error('terrible error 423545')
+                
                 throw new Error(err)
             })
         })

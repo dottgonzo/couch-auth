@@ -3,7 +3,7 @@ import * as chai from "chai"
 
 import { accessRouter } from "../index"
 
-const rpj = require('request-promise-json')
+import * as axios from 'axios'
 const spawnPouchdbServer = require('spawn-pouchdb-server')
 
 import * as express from "express"
@@ -105,7 +105,7 @@ describe("test express server", function () {
 
     it("exists", function (done) {
 
-        rpj.get('http://localhost:' + testexpressport + '/access').then((a) => {
+        axios.get('http://localhost:' + testexpressport + '/access').then((a) => {
 
             expect(a).to.be.ok
             done()
@@ -118,14 +118,14 @@ describe("test express server", function () {
 
     it("testadmin", function (done) {
 
-        rpj.post('http://localhost:' + testexpressport + '/access/testadmin', { admin: adminUser }).then((a) => {
+        axios.post('http://localhost:' + testexpressport + '/access/testadmin', { admin: adminUser }).then((a:any) => {
 
-            if (a && a.error) {
-                done(new Error(a.error))
+            if (a && a.data && a.data.error) {
+                done(new Error(a.data.error))
 
             } else {
                 expect(a).to.be.ok
-                expect(a).to.have.property('ok').that.eq(true)
+                expect(a.data).to.have.property('ok').that.eq(true)
 
                 done()
             }

@@ -69,7 +69,7 @@ function testauth(internal_couchdb, user, password, app_id) {
 
 
     return new Promise(function (resolve, reject) {
-        getuserapp(internal_couchdb, user, app_id).then(function (db) {
+        getuserapp(internal_couchdb, user, app_id).then(function (db:any) {
 
             testlogin(internal_couchdb, user, password, db.dbname).then(function () {
                 resolve(true)
