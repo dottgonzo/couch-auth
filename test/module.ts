@@ -301,17 +301,6 @@ describe("modules", function () {
                 done(new Error(err))
             })
         })
-        it("unregistered users can't add docs to a public app", function (done) {
-            this.timeout(20000)
-
-            axios.put(CouchAuth.publink + '/pub_testapp2/cccn', { _id: 'cccn', aa: true }).then(function (d) {
-                console.error(d)
-                done(new Error(JSON.stringify(d)))
-            }).catch((err) => {
-                expect(err).to.be.ok
-                done()
-            })
-        })
 
         it("registered users can't add docs", function (done) {
             this.timeout(20000)
@@ -322,6 +311,26 @@ describe("modules", function () {
                 expect(err).to.be.ok
                 done()
             })
+        })
+
+        it("registered users can't edit docs", function (done) {
+            this.timeout(20000)
+
+
+            axios.get(CouchAuth.for(user0.user, user0.password) + '/pub_testapp2/testdoctobepresent0').then(function (d: any) {
+                d.ciao = 'bao'
+                axios.put(CouchAuth.for(user0.user, user0.password) + '/pub_testapp2/testdoctobepresent0', d).then(function (d) {
+                    done(new Error(JSON.stringify(d)))
+                }).catch((err) => {
+                    done()
+                })
+
+            }).catch((err) => {
+                console.error(err)
+                done(new Error(err))
+            })
+
+
         })
 
 

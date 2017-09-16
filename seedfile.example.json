@@ -1,0 +1,12 @@
+{
+    "services": [
+        {
+            "uid":"sassari01",
+            "slaveuser":{
+                "username":"",
+                "password":"",
+                "db":""
+            }
+        }
+    ]
+}

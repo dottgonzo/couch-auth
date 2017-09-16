@@ -39,7 +39,7 @@ let Server
 let aa = 'ss'
 
 
-
+const route='http://localhost:' + testexpressport + '/access'
 
 
 
@@ -101,43 +101,102 @@ before(function (done) {
 })
 
 describe("test express server", function () {
+    describe("check server", function () {
 
 
-    it("exists", function (done) {
+        it("exists", function (done) {
 
-        axios.get('http://localhost:' + testexpressport + '/access').then((a) => {
+            axios.get(route).then((a) => {
 
-            expect(a).to.be.ok
-            done()
-        }).catch((err) => {
-            done(new Error(err))
-        })
-    })
-
-
-
-    it("testadmin", function (done) {
-
-        axios.post('http://localhost:' + testexpressport + '/access/testadmin', { admin: adminUser }).then((a:any) => {
-
-            if (a && a.data && a.data.error) {
-                done(new Error(a.data.error))
-
-            } else {
                 expect(a).to.be.ok
-                expect(a.data).to.have.property('ok').that.eq(true)
-
                 done()
-            }
+            }).catch((err) => {
+                done(new Error(err))
+            })
+        })
 
 
-        }).catch((err) => {
 
-            done(new Error(err))
+        it("testadmin", function (done) {
+
+            axios.post(route + '/testadmin', { admin: adminUser }).then((a: any) => {
+
+                if (a && a.data && a.data.error) {
+                    done(new Error(a.data.error))
+
+                } else {
+                    expect(a).to.be.ok
+                    expect(a.data).to.have.property('ok').that.eq(true)
+
+                    done()
+                }
+
+
+            }).catch((err) => {
+
+                done(new Error(err))
+
+            })
+
+        })
+    })
+    describe("users", function () {
+
+        it("testadmin", function (done) {
+
+            axios.post(route + '/testadmin', { admin: adminUser }).then((a: any) => {
+                
+                if (a && a.data && a.data.error) {
+                    done(new Error(a.data.error))
+
+                } else {
+                    expect(a).to.be.ok
+                    expect(a.data).to.have.property('ok').that.eq(true)
+
+                    done()
+                }
+
+
+            }).catch((err) => {
+
+                done(new Error(err))
+
+            })
 
         })
 
+
     })
+
+
+    describe("services", function () {
+
+        it("testadmin", function (done) {
+
+            axios.post(route + '/testadmin', { admin: adminUser }).then((a: any) => {
+                
+                if (a && a.data && a.data.error) {
+                    done(new Error(a.data.error))
+
+                } else {
+                    expect(a).to.be.ok
+                    expect(a.data).to.have.property('ok').that.eq(true)
+
+                    done()
+                }
+
+
+            }).catch((err) => {
+
+                done(new Error(err))
+
+            })
+
+        })
+
+
+    })
+
 
 })
 
