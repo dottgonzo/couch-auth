@@ -392,8 +392,8 @@ function accessRouter(rootaccessdb) {
     router.post('/services/create', function (req, res) {
         if (req.body && req.body.admin && CouchAuth.checkAdmin(req.body.admin)) {
             if (req.body.newuser && req.body.newuser.user && req.body.newuser.password) {
-                if (req.body.app_id) {
-                    CouchAuth.createServiceApp(req.body.admin, req.body.app_id, req.body.newuser).then(function () {
+                if (req.body.service_id) {
+                    CouchAuth.createServiceApp(req.body.admin, req.body.service_id, req.body.newuser).then(function () {
                         res.send({ ok: true });
                     }).catch(function (err) {
                         res.send({ error: err });
@@ -406,6 +406,18 @@ function accessRouter(rootaccessdb) {
             else {
                 res.send({ error: 'wrong user credentials' });
             }
+        }
+        else {
+            res.send({ error: 'wrong admin credentials' });
+        }
+    });
+    router.post('/services/list', function (req, res) {
+        if (req.body && req.body.admin && CouchAuth.checkAdmin(req.body.admin)) {
+            CouchAuth.getServices(req.body.admin).then(function (a) {
+                res.send(a);
+            }).catch(function (err) {
+                res.send({ error: err });
+            });
         }
         else {
             res.send({ error: 'wrong admin credentials' });

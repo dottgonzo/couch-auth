@@ -493,8 +493,8 @@ export function accessRouter(rootaccessdb: I.IClassConf) {
     router.post('/services/create', (req, res) => {
         if (req.body && req.body.admin && CouchAuth.checkAdmin(req.body.admin)) {
             if (req.body.newuser && req.body.newuser.user && req.body.newuser.password) {
-                if (req.body.app_id) {
-                    CouchAuth.createServiceApp(req.body.admin, req.body.app_id, req.body.newuser).then(() => {
+                if (req.body.service_id) {
+                    CouchAuth.createServiceApp(req.body.admin, req.body.service_id, req.body.newuser).then(() => {
                         res.send({ ok: true });
                     }).catch((err) => {
                         res.send({ error: err });
@@ -510,6 +510,22 @@ export function accessRouter(rootaccessdb: I.IClassConf) {
         }
 
     })
+
+
+
+    router.post('/services/list', (req, res) => {
+        if (req.body && req.body.admin && CouchAuth.checkAdmin(req.body.admin)) {
+            CouchAuth.getServices(req.body.admin).then((a) => {
+                        res.send(a);
+                    }).catch((err) => {
+                        res.send({ error: err });
+                    })
+        } else {
+            res.send({ error: 'wrong admin credentials' });
+        }
+
+    })
+
 
 
     return router

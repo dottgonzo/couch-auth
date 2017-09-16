@@ -86,31 +86,40 @@ describe("test express server", function () {
             });
         });
     });
-    describe("users", function () {
-        it("testadmin", function (done) {
-            axios.post(route + '/testadmin', { admin: adminUser }).then(function (a) {
+    describe("services", function () {
+        it("administrator create service", function (done) {
+            axios.post(route + '/services/create', {
+                admin: adminUser,
+                newuser: {
+                    user: 'gggg',
+                    password: 'ddd'
+                },
+                service_id: 'testssss'
+            }).then(function (a) {
                 if (a && a.data && a.data.error) {
                     done(new Error(a.data.error));
                 }
                 else {
                     expect(a).to.be.ok;
-                    expect(a.data).to.have.property('ok').that.eq(true);
+                    expect(a.data).to.be.ok;
+                    expect(a.data.ok).to.eq(true);
                     done();
                 }
             }).catch(function (err) {
                 done(new Error(err));
             });
         });
-    });
-    describe("services", function () {
-        it("testadmin", function (done) {
-            axios.post(route + '/testadmin', { admin: adminUser }).then(function (a) {
+        it("administrator list services", function (done) {
+            axios.post(route + '/services/list', {
+                admin: adminUser
+            }).then(function (a) {
                 if (a && a.data && a.data.error) {
                     done(new Error(a.data.error));
                 }
                 else {
                     expect(a).to.be.ok;
-                    expect(a.data).to.have.property('ok').that.eq(true);
+                    expect(a.data).to.be.ok;
+                    console.log(a.data);
                     done();
                 }
             }).catch(function (err) {
