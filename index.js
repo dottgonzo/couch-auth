@@ -249,7 +249,8 @@ var couchAccess = (function (_super) {
                                     rpj.get(that.my('app_main') + '/services').then(function (servicesdoc) {
                                         servicesdoc.services.push({
                                             db: app_id,
-                                            createdAt: Date.now()
+                                            createdAt: Date.now(),
+                                            slave: slaveuser
                                         });
                                         rpj.put(that.my('app_main') + '/services', servicesdoc).then(function () {
                                             resolve(true);
@@ -281,6 +282,69 @@ var couchAccess = (function (_super) {
         });
     };
     couchAccess.prototype.getServices = function (admin) {
+        var that = this;
+        return new Promise(function (resolve, reject) {
+            if (admin && that.checkAdmin(admin)) {
+                rpj.get(that.my('app_main/services')).then(function (doc) {
+                    resolve(doc.services);
+                }).catch(function (err) {
+                    reject(err);
+                });
+            }
+            else {
+                reject({ error: 'unauthorized' });
+            }
+        });
+    };
+    couchAccess.prototype.getDevices = function (admin, service_id) {
+        var that = this;
+        service_id = 'service_' + service_id;
+        return new Promise(function (resolve, reject) {
+            if (admin && that.checkAdmin(admin)) {
+                rpj.get(that.my(service_id + '/devices')).then(function (doc) {
+                    resolve(doc.devices);
+                }).catch(function (err) {
+                    reject(err);
+                });
+            }
+            else {
+                reject({ error: 'unauthorized' });
+            }
+        });
+    };
+    couchAccess.prototype.addDevice = function (admin, service_id, device_serial) {
+        var that = this;
+        service_id = 'service_' + service_id;
+        return new Promise(function (resolve, reject) {
+            if (admin && that.checkAdmin(admin)) {
+                rpj.get(that.my(service_id + '/devices')).then(function (doc) {
+                    var deviceexist = false;
+                    for (var i = 0; i < doc.devices.length; i++) {
+                        if (doc.devices[i].serial === device_serial)
+                            deviceexist = true;
+                    }
+                    if (deviceexist) {
+                        resolve(true);
+                    }
+                    else {
+                        var device = { serial: device_serial, role: 'device', createdAt: Date.now() };
+                        doc.devices.push(device);
+                        rpj.put(that.my(service_id + '/devices'), doc).then(function () {
+                            resolve(true);
+                        }).catch(function (err) {
+                            reject(err);
+                        });
+                    }
+                }).catch(function (err) {
+                    reject(err);
+                });
+            }
+            else {
+                reject({ error: 'unauthorized' });
+            }
+        });
+    };
+    couchAccess.prototype.removeDevice = function (admin) {
         var that = this;
         return new Promise(function (resolve, reject) {
             if (admin && that.checkAdmin(admin)) {
@@ -421,6 +485,30 @@ function accessRouter(rootaccessdb) {
         }
         else {
             res.send({ error: 'wrong admin credentials' });
+        }
+    });
+    router.post('/devices/list', function (req, res) {
+        if (req.body && req.body.admin && req.body.service_id && CouchAuth.checkAdmin(req.body.admin)) {
+            CouchAuth.getDevices(req.body.admin, req.body.service_id).then(function (a) {
+                res.send(a);
+            }).catch(function (err) {
+                res.send({ error: err });
+            });
+        }
+        else {
+            res.send({ error: 'wrong admin credentials or service_id' });
+        }
+    });
+    router.post('/devices/new', function (req, res) {
+        if (req.body && req.body.admin && req.body.service_id && CouchAuth.checkAdmin(req.body.admin)) {
+            CouchAuth.addDevice(req.body.admin, req.body.service_id, req.body.device_serial).then(function (a) {
+                res.send({ ok: a });
+            }).catch(function (err) {
+                res.send({ error: err });
+            });
+        }
+        else {
+            res.send({ error: 'wrong admin credentials or service_id' });
         }
     });
     return router;

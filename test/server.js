@@ -126,5 +126,42 @@ describe("test express server", function () {
                 done(new Error(err));
             });
         });
+        it("administrator add device", function (done) {
+            axios.post(route + '/devices/new', {
+                admin: adminUser,
+                service_id: 'testssss',
+                device_serial: 'rgjlrgergjelrgje'
+            }).then(function (a) {
+                if (a && a.data && a.data.error) {
+                    done(new Error(a.data.error));
+                }
+                else {
+                    expect(a).to.be.ok;
+                    expect(a.data).to.be.ok;
+                    expect(a.data.ok).to.be.ok;
+                    done();
+                }
+            }).catch(function (err) {
+                done(new Error(err));
+            });
+        });
+        it("administrator list devices", function (done) {
+            axios.post(route + '/devices/list', {
+                admin: adminUser,
+                service_id: 'testssss'
+            }).then(function (a) {
+                if (a && a.data && a.data.error) {
+                    done(new Error(a.data.error));
+                }
+                else {
+                    expect(a).to.be.ok;
+                    expect(a.data).to.be.ok;
+                    console.log(a.data);
+                    done();
+                }
+            }).catch(function (err) {
+                done(new Error(err));
+            });
+        });
     });
 });

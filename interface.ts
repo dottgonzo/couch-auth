@@ -91,7 +91,8 @@ export interface IServicesDoc {
 
 export interface IService {
     db:string
-    createdAt:number
+    createdAt:number,
+    slave: IAuth
 }
 
 export interface IServiceSetup extends IService{
